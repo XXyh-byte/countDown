@@ -1,0 +1,607 @@
+/* style.css - 完整的工作时间倒计时CSS */
+
+:root {
+  /* GitHub 标准色 */
+  --gh-light-bg: #f6f8fa;
+  --gh-light-card: #ffffff;
+  --gh-light-border: #d0d7de;
+  --gh-light-text: #24292f;
+  --gh-light-text-secondary: #57606a;
+  --gh-light-primary: #2da44e;
+  --gh-light-primary-hover: #2c974b;
+  --gh-light-success: #1a7f37;
+  --gh-light-warning: #9a6700;
+  --gh-light-danger: #cf222e;
+
+  --gh-dark-bg: #0d1117;
+  --gh-dark-card: #161b22;
+  --gh-dark-border: #30363d;
+  --gh-dark-text: #e6edf3;
+  --gh-dark-text-secondary: #7d8590;
+  --gh-dark-primary: #3fb950;
+  --gh-dark-primary-hover: #38a44a;
+  --gh-dark-success: #238636;
+  --gh-dark-warning: #bb8009;
+  --gh-dark-danger: #da3633;
+
+  /* 时间选择器图标颜色控制 */
+  --time-picker-invert: 0;
+}
+
+/* 主题切换逻辑 */
+body[data-color-mode="auto"] {
+  --gh-bg: var(--gh-light-bg);
+  --gh-card: var(--gh-light-card);
+  --gh-border: var(--gh-light-border);
+  --gh-text: var(--gh-light-text);
+  --gh-text-secondary: var(--gh-light-text-secondary);
+  --gh-primary: var(--gh-light-primary);
+  --gh-primary-hover: var(--gh-light-primary-hover);
+  --gh-success: var(--gh-light-success);
+  --gh-warning: var(--gh-light-warning);
+  --gh-danger: var(--gh-light-danger);
+}
+
+body[data-color-mode="auto"][data-dark-theme="dark"] {
+  @media (prefers-color-scheme: dark) {
+    --gh-bg: var(--gh-dark-bg);
+    --gh-card: var(--gh-dark-card);
+    --gh-border: var(--gh-dark-border);
+    --gh-text: var(--gh-dark-text);
+    --gh-text-secondary: var(--gh-dark-text-secondary);
+    --gh-primary: var(--gh-dark-primary);
+    --gh-primary-hover: var(--gh-dark-primary-hover);
+    --gh-success: var(--gh-dark-success);
+    --gh-warning: var(--gh-dark-warning);
+    --gh-danger: var(--gh-dark-danger);
+    --time-picker-invert: 1;
+  }
+}
+
+body[data-color-mode="dark"] {
+  --gh-bg: var(--gh-dark-bg);
+  --gh-card: var(--gh-dark-card);
+  --gh-border: var(--gh-dark-border);
+  --gh-text: var(--gh-dark-text);
+  --gh-text-secondary: var(--gh-dark-text-secondary);
+  --gh-primary: var(--gh-dark-primary);
+  --gh-primary-hover: var(--gh-dark-primary-hover);
+  --gh-success: var(--gh-dark-success);
+  --gh-warning: var(--gh-dark-warning);
+  --gh-danger: var(--gh-dark-danger);
+  --time-picker-invert: 1;
+}
+
+/* 基础样式 */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: 
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    transform 0.1s ease,
+    opacity 0.2s ease;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  background-color: var(--gh-bg);
+  color: var(--gh-text);
+  line-height: 1.5;
+  padding: 16px;
+  min-height: 100vh;
+}
+
+/* 主容器 */
+.container {
+  max-width: 780px;
+  margin: 24px auto;
+  background-color: var(--gh-card);
+  border: 1px solid var(--gh-border);
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 8px 24px rgba(0, 0, 0, 0.06);
+  position: relative;
+  overflow: hidden;
+}
+
+.container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #54aeff, #0969da, #8250df, #d1247f);
+}
+
+/* 设置面板 - 优化版本 */
+.settings-panel {
+  background-color: var(--gh-card);
+  border: 1px solid var(--gh-border);
+  border-radius: 8px;
+  margin-bottom: 24px;
+  overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.settings-header {
+  padding: 12px 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: var(--gh-bg);
+  user-select: none;
+}
+
+.settings-header h2 {
+  font-size: 16px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--gh-text);
+}
+
+.toggle-icon {
+  transition: transform 0.3s ease;
+  color: var(--gh-text-secondary);
+}
+
+.settings-content {
+  padding: 16px;
+  display: none;
+  border-top: 1px solid var(--gh-border);
+}
+
+.settings-panel.expanded .settings-content {
+  display: block;
+}
+
+.settings-panel.expanded .toggle-icon {
+  transform: rotate(180deg);
+}
+
+/* 时间范围布局 */
+.time-range-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.time-input-group {
+  flex: 1;
+  min-width: 120px;
+}
+
+.time-input-group label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  margin-bottom: 6px;
+  color: var(--gh-text-secondary);
+}
+
+.time-separator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 80px;
+  position: relative;
+  top: -10px;
+}
+
+.time-separator .line {
+  width: 100%;
+  height: 1px;
+  background-color: var(--gh-border);
+  margin: 12px 0;
+}
+
+.time-separator .duration {
+  font-size: 12px;
+  padding: 4px 8px;
+  background-color: var(--gh-bg);
+  border-radius: 12px;
+  color: var(--gh-text-secondary);
+  white-space: nowrap;
+}
+
+/* 操作按钮 */
+.settings-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* 基础按钮样式 */
+button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  border: 1px solid rgba(27, 31, 36, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow:
+    0 1px 0 rgba(27, 31, 36, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+button:active {
+  transform: translateY(0);
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* 基础按钮样式 */
+button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: white;
+  border: 1px solid rgba(27, 31, 36, 0.15);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow:
+    0 1px 0 rgba(27, 31, 36, 0.04),
+    inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+
+/* 主要按钮（绿色） */
+button:not(.secondary):not(.danger),
+button.primary {
+  background-color: var(--gh-primary); /* 绿色 */
+}
+
+button:not(.secondary):not(.danger):hover,
+button.primary:hover {
+  background-color: var(--gh-primary-hover); /* 深绿色 */
+}
+
+/* 次要按钮 */
+button.secondary {
+  background-color: var(--gh-card);
+  color: var(--gh-text);
+  border-color: var(--gh-border);
+}
+
+button.secondary:hover {
+  background-color: var(--gh-bg);
+  border-color: var(--gh-text-secondary);
+}
+
+/* 危险按钮（红色） */
+button.danger {
+  background-color: var(--gh-danger);
+}
+
+button.danger:hover {
+  background-color: var(--gh-dark-danger);
+}
+
+/* 小尺寸按钮 */
+button.small {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+/* 禁用状态 */
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+/* 输入框样式 */
+input[type="time"] {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--gh-border);
+  border-radius: 6px;
+  background-color: var(--gh-bg);
+  color: var(--gh-text);
+  font-family: inherit;
+  font-size: 14px;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator {
+  filter: invert(var(--time-picker-invert, 0));
+  opacity: 0.8;
+  cursor: pointer;
+}
+
+input[type="time"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* 头部区域 */
+.header {
+  margin-bottom: 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.title-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  user-select: none;
+}
+
+h1 {
+  font-size: 24px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--gh-text);
+}
+
+.title-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(84, 174, 255, 0.1);
+  border-radius: 50%;
+  color: #0969da;
+}
+
+.subtitle {
+  color: var(--gh-text-secondary);
+  font-size: 14px;
+  max-width: 80%;
+  line-height: 1.5;
+}
+
+/* 状态标签 */
+.status-badge {
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 2em;
+  background-color: var(--gh-bg);
+  border: 1px solid var(--gh-border);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-badge.working {
+  background-color: rgba(46, 160, 67, 0.1);
+  border-color: rgba(46, 160, 67, 0.4);
+  color: var(--gh-success);
+}
+
+.status-badge.weekend {
+  background-color: rgba(187, 128, 9, 0.1);
+  border-color: rgba(187, 128, 9, 0.4);
+  color: var(--gh-warning);
+}
+
+.status-badge.ended {
+  background-color: rgba(218, 54, 51, 0.1);
+  border-color: rgba(218, 54, 51, 0.4);
+  color: var(--gh-danger);
+}
+
+/* 倒计时容器 */
+.countdown-container,
+.weekend-countdown-container {
+  margin: 28px 0;
+  padding: 24px;
+  background-color: var(--gh-bg);
+  border: 1px solid var(--gh-border);
+  border-radius: 8px;
+  text-align: center;
+  position: relative;
+  user-select: none;
+}
+
+.countdown-label {
+  position: absolute;
+  top: -10px;
+  left: 16px;
+  font-size: 12px;
+  font-weight: 600;
+  background-color: var(--gh-card);
+  padding: 0 8px;
+  color: var(--gh-text-secondary);
+}
+
+#countdown {
+  font-size: 42px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--gh-text);
+  letter-spacing: 1px;
+  margin: 8px 0;
+}
+
+.countdown-subtext,
+.weekend-countdown-subtext {
+  font-size: 14px;
+  color: var(--gh-text-secondary);
+  margin-top: 8px;
+}
+
+#weekendCountdown {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--gh-text);
+  margin: 8px 0;
+}
+
+/* 按钮组 */
+.btn-group {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+/* 日志区域 */
+.log-container {
+  margin-top: 32px;
+  border-top: 1px solid var(--gh-border);
+  padding-top: 24px;
+}
+
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.log-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--gh-text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.log-actions {
+  display: flex;
+  gap: 8px;
+}
+
+#log {
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, monospace;
+  font-size: 13px;
+  background-color: var(--gh-bg);
+  border: 1px solid var(--gh-border);
+  border-radius: 6px;
+  padding: 16px;
+  max-height: 300px;
+  overflow-y: auto;
+  display: none;
+  line-height: 1.6;
+}
+
+#log.visible {
+  display: block;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* 通知样式 */
+.countdown-notice {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: #1a1a1a;
+  color: #f8f9fa;
+  padding: 15px;
+  border-radius: 8px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  z-index: 1000;
+  width: 250px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  border-left: 4px solid #ff6b6b;
+}
+
+.countdown-header {
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #ff6b6b;
+  font-size: 15px;
+}
+
+.countdown-timer {
+  font-size: 14px;
+  margin: 5px 0;
+  transition: all 0.3s ease;
+}
+
+.countdown-warning {
+  font-size: 12px;
+  opacity: 0.8;
+  margin-top: 8px;
+  color: #adb5bd;
+}
+
+/* 动画 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+  .container {
+    padding: 24px 16px;
+    border-radius: 0 !important;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .btn-group {
+    flex-direction: column-reverse;
+  }
+
+  #countdown {
+    font-size: 32px;
+  }
+  
+  #weekendCountdown {
+    font-size: 24px;
+  }
+
+  /* 移动端时间设置布局 */
+  .time-range-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .time-separator {
+    width: auto;
+    flex-direction: row;
+    align-items: center;
+    top: 0;
+    margin: 8px 0;
+  }
+  
+  .time-separator .line {
+    width: 50%;
+    margin: 0 8px;
+  }
+  
+  .time-separator .duration {
+    background: none;
+    padding: 0;
+  }
+}
